@@ -40,3 +40,40 @@ run the tool, you will be requested to authenticate with Google, and allow the
 requested scopes.  The authorization is cached in a local file so you don't have
 to log in again.
 
+## Example usage
+
+```bash
+jones@glacier$ ./ngt --list matt@magisa.org
+Groups for matt@magisa.org:
+	community@dataone.org
+	oscodefest@nceas.ucsb.edu
+jones@glacier$ ./ngt --update matt@magisa.org
+Both email and new_email are required for update.
+jones@glacier$ ./ngt --update
+Both email and new_email are required for update.
+jones@glacier$ ./ngt --update matt@magisa.org mbjones.89@gmail.com
+Updating groups for matt@magisa.org:
+Updating group: community@dataone.org
+	kind: admin#directory#member
+	etag: "nM32qckM4XsKqhG-zylXvkNQRY8/yg30o1EeD9k6UTZZd-yqkT98JUs"
+	id: 105267514831512253030
+	email: mbjones.89@gmail.com
+	role: MEMBER
+	type: USER
+	status: ACTIVE
+	delivery_settings: ALL_MAIL
+Updating group: oscodefest@nceas.ucsb.edu
+	kind: admin#directory#member
+	etag: "nM32qckM4XsKqhG-zylXvkNQRY8/yg30o1EeD9k6UTZZd-yqkT98JUs"
+	id: 105267514831512253030
+	email: mbjones.89@gmail.com
+	role: MEMBER
+	type: USER
+	status: ACTIVE
+	delivery_settings: ALL_MAIL
+jones@glacier$ ./ngt --list mbjones.89@gmail.com
+Groups for mbjones.89@gmail.com:
+	community@dataone.org
+	oscodefest@nceas.ucsb.edu
+jones@glacier$
+```

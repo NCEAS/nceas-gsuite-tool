@@ -37,7 +37,7 @@ def main():
     action.add_argument('--update', action='store_true', help='Updates emails in all groups for a user')
     parser.add_argument('email', nargs='?', help="email address")
     parser.add_argument('new_email', nargs='?', help="email address for updates")
-    args = vars(parser.parse_args())
+    args = parser.parse_args()
 
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -60,16 +60,16 @@ def main():
 
     service = build('admin', 'directory_v1', credentials=creds)
 
-    if (args['list']):
-        if (args['email'] is None):
+    if (args.list):
+        if (args.email is None):
             list_users(service)
         else:
-            list_groups(service, args['email'])
-    elif (args['update']):
-        if (args['email'] is None or args['new_email'] is None):
+            list_groups(service, args.email)
+    elif (args.update):
+        if (args.email is None or args.new_email is None):
             print("Both email and new_email are required for update.")
         else:
-            update_groups(service, args['email'], args['new_email'])
+            update_groups(service, args.email, args.new_email)
 
 
 def list_users(service):
