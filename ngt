@@ -20,6 +20,7 @@ import pickle
 import os.path
 import argparse
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
@@ -44,7 +45,7 @@ def main():
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time. You must have provided a credentials.json file with an appropriate
-    # client id and client secret from Google API Dashboard for authentication 
+    # client id and client secret from Google API Dashboard for authentication
     # to work.
     if os.path.exists('token.pickle'):
         with open('token.pickle', 'rb') as token:
@@ -124,11 +125,13 @@ def update_groups(service, user_email, new_email):
             del(new_member['id'])
             del(new_member['etag'])
             new_member['email'] = new_email
-            value = service.members().insert(groupKey=group['email'], body=new_member).execute()
-            for key in value:
-                print('\t' + key +': ' + value[key]);
-            value = service.members().delete(groupKey=group['email'], memberKey=user_email).execute()
-
+            try:
+                value = service.members().insert(groupKey=group['email'], body=new_member).execute()
+                for key in value:
+                    print('\t' + key +': ' + value[key]);
+                value = service.members().delete(groupKey=group['email'], memberKey=user_email).execute()
+            except HttpError as err:
+                print('\tSkipped due to error: ', err._get_reason())
 
 
 if __name__ == '__main__':
