@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START admin_sdk_directory_quickstart]
+# Tutorial derived from the Google python admin_sdk_directory_quickstart
 from __future__ import print_function
 import pickle
 import os.path
@@ -42,7 +42,9 @@ def main():
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
-    # time.
+    # time. You must have provided a credentials.json file with an appropriate
+    # client id and client secret from Google API Dashboard for authentication 
+    # to work.
     if os.path.exists('token.pickle'):
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
@@ -73,7 +75,8 @@ def main():
 
 
 def list_users(service):
-    # First 10 users in the domain
+    """List first 10 users in the domain
+    """
     print('Getting the first 10 users in the domain')
     results = service.users().list(customer='my_customer', maxResults=10,
                                 orderBy='email').execute()
@@ -88,7 +91,8 @@ def list_users(service):
                 user['name']['fullName']))
 
 def list_groups(service, user_email):
-    # List groups for a particular user
+    """List groups for a particular user
+    """
 
     results = service.groups().list(userKey=user_email).execute()
     groups = results.get('groups', [])
@@ -101,7 +105,8 @@ def list_groups(service, user_email):
             print(u'\t{0}'.format(group['email']))
 
 def update_groups(service, user_email, new_email):
-    # Update the email in groups for a particular user
+    """Update the email in groups for a particular user
+    """
 
     results = service.groups().list(userKey=user_email).execute()
     groups = results.get('groups', [])
