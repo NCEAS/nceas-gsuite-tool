@@ -1,0 +1,130 @@
+#!/usr/bin/env python
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START admin_sdk_directory_quickstart]
+from __future__ import print_function
+import pickle
+import os.path
+import argparse
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+
+# If modifying these scopes, delete the file token.pickle.
+SCOPES = ['https://www.googleapis.com/auth/admin.directory.user',
+          'https://www.googleapis.com/auth/admin.directory.group',
+          'https://www.googleapis.com/auth/admin.directory.group.member']
+
+def main():
+    """NCEAS GSuite Tool: manage GSuite users and groups.
+    """
+
+    parser = argparse.ArgumentParser(description='NCEAS GSuite Tool: manage GSuite users and groups.')
+    action = parser.add_mutually_exclusive_group(required=True)
+    action.add_argument('--list', action='store_true', help='List users or groups for a user')
+    action.add_argument('--update', action='store_true', help='Updates emails in all groups for a user')
+    parser.add_argument('email', nargs='?', help="email address")
+    parser.add_argument('new_email', nargs='?', help="email address for updates")
+    args = vars(parser.parse_args())
+
+    creds = None
+    # The file token.pickle stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
+            creds = pickle.load(token)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+
+    service = build('admin', 'directory_v1', credentials=creds)
+
+    if (args['list']):
+        if (args['email'] is None):
+            list_users(service)
+        else:
+            list_groups(service, args['email'])
+    elif (args['update']):
+        if (args['email'] is None or args['new_email'] is None):
+            print("Both email and new_email are required for update.")
+        else:
+            update_groups(service, args['email'], args['new_email'])
+
+
+def list_users(service):
+    # First 10 users in the domain
+    print('Getting the first 10 users in the domain')
+    results = service.users().list(customer='my_customer', maxResults=10,
+                                orderBy='email').execute()
+    users = results.get('users', [])
+
+    if not users:
+        print('No users in the domain.')
+    else:
+        print('Users:')
+        for user in users:
+            print(u'{0} ({1})'.format(user['primaryEmail'],
+                user['name']['fullName']))
+
+def list_groups(service, user_email):
+    # List groups for a particular user
+
+    results = service.groups().list(userKey=user_email).execute()
+    groups = results.get('groups', [])
+
+    if not groups:
+        print('No groups matched for that email address.')
+    else:
+        print('Groups for ' + user_email + ':')
+        for group in groups:
+            print(u'\t{0}'.format(group['email']))
+
+def update_groups(service, user_email, new_email):
+    # Update the email in groups for a particular user
+
+    results = service.groups().list(userKey=user_email).execute()
+    groups = results.get('groups', [])
+
+    if not groups:
+        print('No groups matched for that email address.')
+    else:
+        print('Updating groups for ' + user_email + ':')
+        for group in groups:
+            #print(group)
+            print(u'Updating group: {0}'.format(group['email']))
+            member = service.members().get(groupKey=group['email'], memberKey=user_email).execute()
+            new_member = dict(member)
+            del(new_member['id'])
+            del(new_member['etag'])
+            new_member['email'] = new_email
+            value = service.members().insert(groupKey=group['email'], body=new_member).execute()
+            for key in value:
+                print('\t' + key +': ' + value[key]);
+            value = service.members().delete(groupKey=group['email'], memberKey=user_email).execute()
+
+
+
+if __name__ == '__main__':
+    main()
+# [END admin_sdk_directory_quickstart]
