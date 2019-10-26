@@ -1,12 +1,14 @@
 # NCEAS GSuite Tool
 
 Simple example script showing how to use the Google GSuite AdminAPI for
-managing users and groups.  The current tool performs three simple operations:
+managing users and groups.  The current tool performs simple operations:
 
 - list users in domain
     - `./ngt --list`
 - list groups for a user
     - `./ngt --list matt@magisa.org`
+- list members of a group
+    - `./ngt --members leaders2@dataone.org`
 - update a users email for all of their groups
     - `./ngt --update matt@magisa.org mbjones.89@gmail.com`
 
@@ -25,7 +27,7 @@ Authentication is provided via a `credentials.json` file that provides the
 client id and client secret to be used for all operations.  These can be
 configured through the [Google API
 Dashboard](https://console.developers.google.com/apis/credentials).  You will
-need to configure an `OAuth 2.0 client ID` and with sufficent privledges for the
+need to configure an `OAuth 2.0 client ID` with sufficent privledges for the
 necessary authentication scopes to be granted:
 
 SCOPES 

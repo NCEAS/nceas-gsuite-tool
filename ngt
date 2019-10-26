@@ -36,6 +36,7 @@ def main():
     parser = argparse.ArgumentParser(description='NCEAS GSuite Tool: manage GSuite users and groups.')
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument('--list', action='store_true', help='List users or groups for a user')
+    action.add_argument('--members', action='store_true', help='List members of  a group')
     action.add_argument('--update', action='store_true', help='Updates emails in all groups for a user')
     parser.add_argument('email', nargs='?', help="email address")
     parser.add_argument('new_email', nargs='?', help="email address for updates")
@@ -69,6 +70,11 @@ def main():
             list_users(service)
         else:
             list_groups(service, args.email)
+    elif (args.members):
+        if (args.email is None):
+            print("You must provide the email address for a group.")
+        else:
+            list_members(service, args.email)
     elif (args.update):
         if (args.email is None or args.new_email is None):
             print("Both email and new_email are required for update.")
@@ -105,6 +111,20 @@ def list_groups(service, user_email):
         print('Groups for ' + user_email + ':')
         for group in groups:
             print(u'\t{0}'.format(group['email']))
+
+def list_members(service, group_email):
+    """List members for a particular group
+    """
+
+    results = service.members().list(groupKey=group_email).execute()
+    members = results.get('members', [])
+
+    if not members:
+        print('No members matched for that group.')
+    else:
+        print('Members for ' + group_email + ':')
+        for member in members:
+            print(u'\t{0:{width}}{1}'.format(member['email'], member['role'], width=40))
 
 def update_groups(service, user_email, new_email):
     """Update the email in groups for a particular user
